@@ -19,7 +19,7 @@
 
         let ctx;
         let score = 0;
-        let prob = 0.96;
+        let prob = 0.99;
         let basketX = 0;
         let timerId = NaN;
         let basket, chick, egg1, egg2, back;
@@ -48,8 +48,9 @@
             };
 
             window.addEventListener("touchmove", (e) => {
+                e.preventDefault();
                 basketX = e.touches[0].clientX;
-            });
+            }, { passive: false });
         };
 
         function resizeCanvas() {
@@ -73,38 +74,51 @@
                 eggs.push({x: Math.random() * canvas.width, y: 1, speed: 3});
             }
 
-            // 卵の当たり判定（バスケットに入ったら消す）
-            eggs = eggs.filter((e) => {
-                const hitX = (e.x > basketX - 60 && e.x < basketX + 60);
-                const hitY = (e.y > basketY - 20 && e.y < basketY + 20);
-                if(hitX && hitY){
-                    score++;
-                    return false;
-                }
-                return true;
-            });
-
             // スコア表示
             ctx.fillStyle = "green";
             ctx.fillText("Score: " + score, 15, 40);
 
             // 卵描画
-            eggs.forEach((e) => {
-                e.speed += 0.2;   // 徐々に加速
-                e.y += e.speed;   // 速度に応じて落下
+            eggs = eggs.filter((e) => {
+
+                // 次の位置を計算
+                e.speed *= 1.05;
+                const nextY = e.y + e.speed;
+                const nextX = e.x;
+
+                // 当たり判定（落下後の位置）
+                const hitX = (nextX > basketX - 70 && nextX < basketX + 70);
+                const hitY = (nextY > basketY - 30 && nextY < basketY + 30);
+
+                if(hitX && hitY){
+                    score++;
+                    return false; // ← 卵を消す（filter なら消える）
+                }
+
+                // 当たらないなら落下させる
+                e.y = nextY;
+
+                // 描画
+                const eggWidth = egg1.width + 10;
+                const chickWidth = chick.width + 10;
+
+                const safeEggX = Math.max(0, Math.min(e.x, canvas.width - eggWidth));
+                const safeChickX = Math.max(0, Math.min(e.x, canvas.width - chickWidth));
 
                 if(e.y < 50){
-                    ctx.drawImage(chick, e.x - 30, 10);
+                    ctx.drawImage(chick, safeChickX, 10);
                 } else {
-                    ctx.drawImage(egg1, e.x, e.y);
+                    ctx.drawImage(egg1, safeEggX + 20, e.y);
                 }
 
                 // GAME OVER 判定
-                if(e.y > canvas.height - 50){
+                if(e.y > canvas.height - 10){
                     clearInterval(timerId);
                     ctx.fillText("GAME OVER", canvas.width / 2 - 100, canvas.height / 2);
-                    ctx.drawImage(egg2, e.x, e.y);
+                    ctx.drawImage(egg2, e.x + 20, canvas.height - 60);
                 }
+
+                return true; // ← 卵を残す
             });
         }
     </script>
