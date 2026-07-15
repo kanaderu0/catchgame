@@ -99,16 +99,13 @@
                 e.y = nextY;
 
                 // 描画
-                const eggWidth = egg1.width + 10;
-                const chickWidth = chick.width + 10;
-
-                const safeEggX = Math.max(0, Math.min(e.x, canvas.width - eggWidth));
+                const chickWidth = chick.width + 20;
                 const safeChickX = Math.max(0, Math.min(e.x, canvas.width - chickWidth));
 
                 if(e.y < 50){
                     ctx.drawImage(chick, safeChickX, 10);
                 } else {
-                    ctx.drawImage(egg1, safeEggX + 20, e.y);
+                    ctx.drawImage(egg1, safeChickX + 20, e.y);
                 }
 
                 // GAME OVER 判定
