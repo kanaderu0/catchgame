@@ -46,6 +46,10 @@
             window.onmousemove = (e) => {
                 basketX = e.clientX;
             };
+
+            window.addEventListener("touchmove", (e) => {
+                basketX = e.touches[0].clientX;
+            });
         };
 
         function resizeCanvas() {
@@ -66,12 +70,12 @@
 
             // 卵生成
             if(Math.random() > prob){
-                eggs.push({x: Math.random() * canvas.width, y: 1});
+                eggs.push({x: Math.random() * canvas.width, y: 1, speed: 3});
             }
 
             // 卵の当たり判定（バスケットに入ったら消す）
             eggs = eggs.filter((e) => {
-                const hitX = (e.x > basketX - 50 && e.x < basketX + 50);
+                const hitX = (e.x > basketX - 60 && e.x < basketX + 60);
                 const hitY = (e.y > basketY - 20 && e.y < basketY + 20);
                 if(hitX && hitY){
                     score++;
@@ -82,14 +86,15 @@
 
             // スコア表示
             ctx.fillStyle = "green";
-            ctx.fillText("Score: " + score, canvas.width - 250, 80);
+            ctx.fillText("Score: " + score, 15, 40);
 
             // 卵描画
             eggs.forEach((e) => {
-                e.y += 5; // 落下速度（バグ修正）
+                e.speed += 0.2;   // 徐々に加速
+                e.y += e.speed;   // 速度に応じて落下
 
                 if(e.y < 50){
-                    ctx.drawImage(chick, e.x, 10);
+                    ctx.drawImage(chick, e.x - 30, 10);
                 } else {
                     ctx.drawImage(egg1, e.x, e.y);
                 }
